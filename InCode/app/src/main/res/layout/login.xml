@@ -108,7 +108,7 @@
                 android:layout_height="40dp"
                 android:layout_gravity="center"
                 android:layout_marginTop="20dp"
-                android:background="@color/black_overlay"
+                android:background="@drawable/list_grad"
                 android:fontFamily="sans-serif"
                 android:text="@string/inicioSesion"
                 android:textAllCaps="true"
