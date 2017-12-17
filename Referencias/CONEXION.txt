@@ -1,0 +1,138 @@
+//METODO DE INICIO DE SESIÓN
+
+
+
+
+   SharedPreferences sharedPreferences = InicioSesion.this.getSharedPreferences(getString(R.string.PREF_FILE),MODE_PRIVATE);
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+
+        String exploracionAutomatica = sharedPreferences.getString("EXPLO","");
+        if(exploracionAutomatica.isEmpty()) {
+
+            String nombredeusuario = nombreUsuario.getText().toString();
+            String contraseñadeusuario = Contraseña.getText().toString();
+            editor.putString(getString(R.string.NOMBRE_USUARIO), nombredeusuario);
+            editor.putString(getString(R.string.CONTRA_USUARIO), contraseñadeusuario);
+            editor.putString("auto", automatico);
+            editor.apply();
+            String type = "login";
+            BackgroundOps backgroundOps = new BackgroundOps(this);
+            backgroundOps.execute(type, nombredeusuario, contraseñadeusuario);
+        }
+        else
+        {
+
+            String nombredeusuario = nombreUsuario.getText().toString();
+            String contraseñadeusuario = Contraseña.getText().toString();
+            editor.putString(getString(R.string.NOMBRE_USUARIO), nombredeusuario);
+            editor.putString(getString(R.string.CONTRA_USUARIO), contraseñadeusuario);
+            editor.putString("auto", automatico);
+            editor.apply();
+            String type = "loginExploracion";
+            BackgroundOps backgroundOps = new BackgroundOps(this);
+            backgroundOps.execute(type, nombredeusuario, contraseñadeusuario);
+        }
+@Override
+        
+
+//CÓDIGO PARA BASE DE DATOS
+
+String login_url = "https://www.thinkingmediaco.com/Th/login.php";
+
+
+If (type.equals("login")) {
+
+                try {
+                    URL url = new URL(login_url);
+                    try {
+
+                        String user_name = params[1];
+                        String user_pass = params[2];
+                        HttpsURLConnection httpsURLConnection = (HttpsURLConnection) url.openConnection();
+                        httpsURLConnection.setRequestMethod("POST");
+                        httpsURLConnection.setDoOutput(true);
+                        httpsURLConnection.setDoInput(true);
+                        httpsURLConnection.setConnectTimeout(5000);
+                        httpsURLConnection.setReadTimeout(5000);
+                        OutputStream outputStream = httpsURLConnection.getOutputStream();
+                        BufferedWriter bufferedWriter = new BufferedWriter(new OutputStreamWriter(outputStream, "UTF-8"));
+                        String post_data = URLEncoder.encode("user_name", "UTF-8") + "=" + URLEncoder.encode(user_name, "UTF-8") + "&" +
+                                URLEncoder.encode("user_pass", "UTF-8") + "=" + URLEncoder.encode(user_pass, "UTF-8");
+                        bufferedWriter.write(post_data);
+                        bufferedWriter.flush();
+                        bufferedWriter.close();
+                        outputStream.close();
+                        InputStream inputStream = httpsURLConnection.getInputStream();
+                        BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream, "iso-8859-1"));
+                        String result = "";
+                        String line = "";
+                        while ((line = bufferedReader.readLine()) != null) {
+                            result += line;
+                        }
+                        bufferedReader.close();
+                        inputStream.close();
+                        httpsURLConnection.disconnect();
+
+                        return result;
+
+
+                    } catch (Exception e) {
+                        Looper.prepare();
+                        pd.dismiss();
+                        e.printStackTrace();
+
+                    }
+                } catch (MalformedURLException e) {
+                    Looper.prepare();
+                    Toast.makeText(context, "Error de red", Toast.LENGTH_LONG).show();
+                    e.printStackTrace();
+
+                }
+            }
+                else
+{
+
+}
+
+protected void onPreExecute () {
+
+            super.onPreExecute();
+
+            pd = new ProgressDialog(this.context);
+            pd.show();
+            pd.setMessage("Cargando");
+            pd.setCancelable(false);
+            pd.setCanceledOnTouchOutside(false);
+            pd.setMax(10000);
+
+
+
+        }
+
+ @Override
+        protected void onPostExecute (String result){
+
+
+            if (result == null)
+
+            {
+
+                Toast.makeText(context, "No hay internet", Toast.LENGTH_SHORT).show();
+
+                pd.dismiss();
+
+            } else {
+
+                if (result.trim().equals("1")) {
+
+
+                    ((Activity) context).finish();
+                    pd.dismiss();
+
+                    Intent intent = new Intent(context, Mispensamientos20.class);
+                    context.startActivity(intent);
+
+
+
+
+                }

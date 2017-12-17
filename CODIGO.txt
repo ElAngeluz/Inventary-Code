@@ -1,0 +1,274 @@
+Tarea asincronica
+
+
+class busqueda extends AsyncTask<Void, Void, String>
+    {
+
+
+        String json_url;
+
+        @Override
+        protected void onPreExecute() {
+            json_url = "https://www.thinkingmediaco.com/TFg4J1Cb1h/busqueda.php";
+
+
+        }
+
+        @Override
+        protected String doInBackground(Void... voids)
+        {
+            try {
+                URL url= new URL (json_url);
+                /*Se adquiere el link para abrir la comunicación httpURLCOnnection y se puede meter un metodo post para poder
+                enviar los datos que se requieran para organizar con las variables lo que se pide del servidor, asi intercambio
+                datos con el servidor al mismo tiempo que los adquiero
+                 */
+                HttpURLConnection httpURLConnection =(HttpURLConnection) url.openConnection();
+                httpURLConnection.setRequestMethod("POST");
+                httpURLConnection.setDoOutput(true);
+                httpURLConnection.setDoInput(true);
+                OutputStream outputStream = httpURLConnection.getOutputStream();
+                BufferedWriter bufferedWriter = new BufferedWriter(new OutputStreamWriter(outputStream,"UTF-8"));
+                String post_data = URLEncoder.encode("busqueda" , "UTF-8") +"="+URLEncoder.encode(busqueda , "UTF-8");
+                bufferedWriter.write(post_data);
+                bufferedWriter.flush();
+                bufferedWriter.close();
+                outputStream.close();
+                /*Termina la comunicación de envio a el servidor para la obtención de los datos y comienza la comunicación
+                con él para recibir datos
+                 */
+                InputStream inputStream = httpURLConnection.getInputStream();
+                BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream));
+                StringBuilder stringBuilder = new StringBuilder();
+
+
+                while ((JSON_STRING = bufferedReader.readLine()) == null) ;
+                {
+                    stringBuilder.append(JSON_STRING + "\n");
+
+                }
+
+                bufferedReader.close();
+                inputStream.close();
+                httpURLConnection.disconnect();
+                return stringBuilder.toString().trim();
+
+
+            } catch (MalformedURLException e) {
+                e.printStackTrace();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            return null;
+        }
+
+        @Override
+        protected void onProgressUpdate(Void... values) {
+            super.onProgressUpdate(values);
+        }
+
+        @Override
+        protected void onPostExecute(String result) {
+
+
+            json_string= result;
+            if(json_string==null)
+            {
+                Toast.makeText(getApplicationContext(),"No hay conexión a internet",Toast.LENGTH_SHORT).show();
+            }
+            else
+            {
+                //inicializa objeto json
+
+                try {
+                    jsonObject = new JSONObject(json_string);
+                    jsonArray = new JSONObject(json_string).getJSONArray("server_response");
+                    int count=0;
+
+                    if(jsonArray.length()==0)
+                    {
+                        Toast.makeText(getApplicationContext(),"Sin resultados",Toast.LENGTH_SHORT).show();
+                    }
+                    //INSERTA STRINGS NUEVOS
+                    String nombre, xp, seguidores, ideas, likes;
+
+                    //llena la lista
+
+                    while (count<jsonArray.length())
+                    {
+                        //Se obtiene la información
+                        JSONObject JO = jsonArray.getJSONObject(count);
+                        //INSERTA STRINGS NUEVOS
+                        nombre= JO.getString("nombre");
+                        xp = JO.getString("puntaje");
+                        seguidores = JO.getString("seguidores");
+                        ideas = JO.getString("ideas");
+                        likes = JO.getString("favoritas");
+
+                /*
+                PARA LOS DEMÁS ATRIBUTOS A LEER DE LA BASE DE DATOS
+                 */
+
+                /*
+                fecha = JO.getString("fechacreacion");
+                idea= JO.getString("Pensamiento");
+                id= JO.getString("id");
+                categoria = JO.getString("categoria");
+                dueno = JO.getString("dueno");
+                */
+
+                        //INSERTA STRINGS NUEVOS
+
+                        filtrado_busqueda filtradousuario = new filtrado_busqueda(nombre, xp, seguidores, ideas, likes);
+                        filtradoadaptador.add(filtradousuario);
+
+
+                        count=count+1;
+
+
+                    }
+
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+
+            }
+
+
+        }
+
+
+
+el filtrado
+
+
+
+package com.Thinkerv1.nixburemi.thinker;
+
+/**
+ * Created by Nixburemi on 04-Feb-17.
+ */
+
+//Esta clase se encarga de pasar los datos de una clase a otra.
+
+public class filtrado_busqueda {
+
+    //INSERTA STRINGS NUEVOS
+    private String nombre, xp, seguidores, ideas, likes;
+
+
+    public String getNombre() {
+        return nombre;
+    }
+
+    public void setNombre(String nombre) {
+        this.nombre = nombre;
+    }
+
+    public String getXp() {
+        return xp;
+    }
+
+    public void setXp(String xp) {
+        this.xp = xp;
+    }
+
+    public String getSeguidores() {
+        return seguidores;
+    }
+
+    public void setSeguidores(String seguidores) {
+        this.seguidores = seguidores;
+    }
+
+    public String getIdeas() {
+        return ideas;
+    }
+
+    public void setIdeas(String ideas) {
+        this.ideas = ideas;
+    }
+
+    public String getLikes() {
+        return likes;
+    }
+
+    public void setLikes(String likes) {
+        this.likes = likes;
+    }
+
+    public filtrado_busqueda(String nombre, String xp, String seguidores, String ideas, String likes)
+    {
+        //INSERTA STRINGS NUEVOS
+        this.setNombre(nombre);
+        this.setXp(xp);
+        this.setSeguidores(seguidores);
+        this.setIdeas(ideas);
+        this.setLikes(likes);
+
+
+    }
+
+
+
+
+    //INSERTA STRINGS NUEVOS
+
+    //INSERTA STRINGS NUEVOS
+
+
+
+
+}
+
+
+
+LOGIN DE PHP
+
+<?php
+
+require "connection.php";
+$user_name=$_POST["user_name"];
+$user_pass=$_POST["user_pass"];
+$vername = "select * from usuario where nombre= '$user_name'";
+$result = mysqli_query($conn,$vername);
+$res = mysqli_num_rows($result);
+$vetado="select * from usuario where nombre = '$user_name' and vetado = 1";
+$resultVetado = mysqli_query($conn,$vetado);
+$vet = mysqli_num_rows($resultVetado);
+//checa si el usuario está vetado por infringir las reglas
+if($vet==1)
+{
+  echo "vetado";
+}
+else
+{
+if($res==0)
+{
+    
+ echo "8";
+
+}
+else
+{
+$query="select * from usuario where nombre = '$user_name'";
+$nots= mysqli_query($conn,$query);
+if($notas = mysqli_fetch_array($nots))
+{
+if(password_verify($_POST['user_pass'],$notas["password"]))
+  {
+    // para enviar mensaje de mantenimiento echo "404", "1 para permitir el inicio";    
+   echo "1";
+  }
+ else
+ {
+  echo "2";
+ }
+}
+}
+}
+// para enviar mensaje de mantenimiento echo "404";
+mysqli_close($conn);
+
+?>				
+
